@@ -1,0 +1,55 @@
+{ 
+  "project_info": {
+    "project_number": "784141747740",
+    "firebase_url": "https://ygpstracker.firebaseio.com",
+    "project_id": "ygpstracker",
+    "storage_bucket": "ygpstracker.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:784141747740:android:fa78057766a6057f",
+        "android_client_info": {
+          "package_name": "ru.yellosoft_club.y_gpstracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "784141747740-ihccb1ga7ma3ttf5oduq4s4du6abhqbk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ru.yellosoft_club.y_gpstracker",
+            "certificate_hash": "9723112e4c67da6fd0d6875e013131ee3c168bbc"
+          }
+        },
+        {
+          "client_id": "784141747740-c3vla1r66u12b371r40ft4lospg7ui7u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALuO7QvbW6ZLg3oEyyUcawJCBN0fuWlsU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "784141747740-c3vla1r66u12b371r40ft4lospg7ui7u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
