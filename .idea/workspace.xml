@@ -8,7 +8,6 @@
   <component name="ChangeListManager">
     <list default="true" id="93c05ed4-1f3a-4465-a280-e988c05128fe" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/ru/yellosoft_club/y_gpstracker/authorization.java" afterPath="$PROJECT_DIR$/app/src/main/java/ru/yellosoft_club/y_gpstracker/authorization.java" />
     </list>
     <ignored path="Y_GPSTracker.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -2818,7 +2817,14 @@
       <option name="project" value="LOCAL" />
       <updated>1489154507992</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="09.03.17 15:00 - 16:00">
+      <created>1489154611977</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1489154611977</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TodoView">
