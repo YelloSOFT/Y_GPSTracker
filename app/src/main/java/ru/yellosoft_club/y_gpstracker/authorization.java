@@ -109,7 +109,7 @@ public class authorization extends AppCompatActivity implements View.OnClickList
             }
         });
 
-                //Вывести про непр=
+                //Вывести про короткий пароль
        // MapFragment
     }
 }
