@@ -493,7 +493,7 @@
         jumboMode="true"
         optimize="true"
         revision="24.0.3"
-        sha1="4f09784bf35b6980f6fd34b866da9646deedf356">
+        sha1="4bf55782685ee32de69bc22b8a09e7b5690d9dbf">
         <dex dex="E:\GPS\Y_GPSTracker\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run_5f348d50e8988b8e8f6d5b4f0a98828ac2315311\classes.dex" />
     </item>
     <item
@@ -637,7 +637,7 @@
         jumboMode="true"
         optimize="true"
         revision="24.0.3"
-        sha1="2d884d5586262cfcc6e8c27ad5a635801f53ad06">
+        sha1="fb679f8baad5ec3bbcba38c3a25aeaef8c0aa3f8">
         <dex dex="E:\GPS\Y_GPSTracker\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run-bootstrap_8f4525b25dece81eedd453838b7ba9232587bfc5\classes.dex" />
     </item>
     <item
