@@ -1,5 +1,6 @@
 package ru.yellosoft_club.y_gpstracker;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -12,9 +13,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import com.google.android.gms.maps.*;
 
 public class main_settings extends AppCompatActivity
+
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    GoogleMap googleMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +45,9 @@ public class main_settings extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
     }
+
 
     @Override
     public void onBackPressed() {
@@ -54,19 +61,13 @@ public class main_settings extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main_settings, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -77,21 +78,17 @@ public class main_settings extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
-
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.Share) {
+            Intent share_intent = new Intent((Intent.ACTION_SEND));
+            share_intent.setType("text/plain");
+            String st2 = "Y_GPSTracker\nБесплатный GPS Трекер\nwww.yellosoft-club.ru";
+            share_intent.putExtra(android.content.Intent.EXTRA_SUBJECT,st2);
+            startActivity(Intent.createChooser(share_intent, "Поделиться ☺"));
+        } else if (id == R.id.Donate) {
+             //
+        } else if (id == R.id.About) {
+            //
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

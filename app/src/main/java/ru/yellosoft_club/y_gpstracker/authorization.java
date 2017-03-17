@@ -87,6 +87,7 @@ public class authorization extends AppCompatActivity implements View.OnClickList
 
                     Intent intent = new Intent(authorization.this, main_settings.class);
                     startActivity(intent);
+                    finish();
                 } else {
                     Toast.makeText(authorization.this, "Ошибка! Вы не авторизированы!", Toast.LENGTH_SHORT).show();
                 }
@@ -104,6 +105,7 @@ public class authorization extends AppCompatActivity implements View.OnClickList
 
                     Intent intent = new Intent(authorization.this, main_settings.class);
                     startActivity(intent);
+                    finish();
                 } else
                     Toast.makeText(authorization.this, "Ошибка! Введите корректные данные", Toast.LENGTH_SHORT).show();
             }
