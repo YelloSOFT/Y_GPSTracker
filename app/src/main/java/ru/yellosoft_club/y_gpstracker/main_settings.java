@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -14,9 +15,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.maps.*;
+import java.security.Security;
 
 public class main_settings extends AppCompatActivity
 
@@ -49,15 +51,18 @@ public class main_settings extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+
+        //Не работает, при переходе на это активити - вылет
+      //String gg = getIntent().getStringExtra("Email");
+       // TextView gg2 = (TextView) navigationView.findViewById(R.id.textView2);
+        //gg2.setText(gg);
+        createMapView();
+
     }
     private void createMapView(){
-        /**
-         * Catch the null pointer exception that
-         * may be thrown when initialising the map
-         */
         try {
             if(null == googleMap){
-                 ((MapFragment) getFragmentManager().findFragmentById(
+                ((MapFragment) getFragmentManager().findFragmentById(
                         R.id.mapView)).getMapAsync(new OnMapReadyCallback() {
                     @Override
                     public void onMapReady(GoogleMap googleMap) {
@@ -66,12 +71,23 @@ public class main_settings extends AppCompatActivity
                             Toast.makeText(getApplicationContext(),
                                     "Error creating map",Toast.LENGTH_SHORT).show();
                         }
+                        try {
+                            googleMap.setMyLocationEnabled(true);
+                            //  if (ContextCompat.checkSelfPermission(this, Manifest.permission.)
+                            //        == PackageManager.PERMISSION_GRANTED) {
+                            //     mMap.setMyLocationEnabled(true);
+                            //  } else {
+                            // Show rationale and request permission.
+                            //   }
+                        }
+                        catch (SecurityException e){Log.e ("" ,"fail ", e);}
                     }
                 });
             }
         } catch (NullPointerException exception){
             Log.e("mapApp", exception.toString());
         }
+
     }
 
     @Override
@@ -83,6 +99,7 @@ public class main_settings extends AppCompatActivity
             super.onBackPressed();
         }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -110,6 +127,7 @@ public class main_settings extends AppCompatActivity
             String st2 = "Y_GPSTracker\nБесплатный GPS Трекер\nwww.yellosoft-club.ru";
             share_intent.putExtra(Intent.EXTRA_SUBJECT,st2);
             share_intent.putExtra(Intent.EXTRA_TEXT,st2);
+            share_intent.putExtra(Intent.EXTRA_EMAIL,st2);
             startActivity(Intent.createChooser(share_intent, "Поделиться ☺"));
         } else if (id == R.id.Donate) {
              //
@@ -121,4 +139,5 @@ public class main_settings extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
 }

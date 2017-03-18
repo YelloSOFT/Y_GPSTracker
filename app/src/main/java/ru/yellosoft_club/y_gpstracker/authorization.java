@@ -96,7 +96,7 @@ public class authorization extends AppCompatActivity implements View.OnClickList
         });
     }
 
-    public void registration(String email, String password) {
+    public void registration(final String email, String password) {
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -104,6 +104,7 @@ public class authorization extends AppCompatActivity implements View.OnClickList
                     Toast.makeText(authorization.this, "Регистрация прошла успешно", Toast.LENGTH_SHORT).show();
 
                     Intent intent = new Intent(authorization.this, main_settings.class);
+                    intent.putExtra("Email", email);
                     startActivity(intent);
                     finish();
                 } else
