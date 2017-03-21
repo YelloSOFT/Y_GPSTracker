@@ -22,7 +22,7 @@
         android:layout_weight="0.21" />
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="230dp"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:text="%EMAIL_USERS%"

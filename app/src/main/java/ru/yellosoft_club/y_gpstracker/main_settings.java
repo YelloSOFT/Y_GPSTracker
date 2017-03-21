@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.maps.*;
@@ -33,29 +34,31 @@ public class main_settings extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+               this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+       drawer.setDrawerListener(toggle);
+       toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
 
-        //Не работает, при переходе на это активити - вылет
-      //String gg = getIntent().getStringExtra("Email");
-       // TextView gg2 = (TextView) navigationView.findViewById(R.id.textView2);
-        //gg2.setText(gg);
+        //Не работает, при переходе на это активити - вылет v.1
+        //TextView tvView;
+        // tvView = (TextView) findViewById(R.id.textView2);
+        //Intent intent = new Intent(main_settings.this, authorization.class);
+        //String fName = intent.getStringExtra("Email");
+        //tvView.setText(fName);
+
+        //Не работает, при переходе на это активити - вылет v.2
+        // TextView tvView;
+        //tvView = (TextView)findViewById(R.id.textView2);
+        //Intent intent = getIntent();
+        //String name = intent.getStringExtra("name");
+        //tvView.setText(name);
+
+
         createMapView();
 
     }
@@ -80,7 +83,7 @@ public class main_settings extends AppCompatActivity
                             // Show rationale and request permission.
                             //   }
                         }
-                        catch (SecurityException e){Log.e ("" ,"fail ", e);}
+                        catch (SecurityException e){Log.e ("" ,"Error ", e);}
                     }
                 });
             }
@@ -107,16 +110,6 @@ public class main_settings extends AppCompatActivity
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -124,20 +117,22 @@ public class main_settings extends AppCompatActivity
         if (id == R.id.Share) {
             Intent share_intent = new Intent((Intent.ACTION_SEND));
             share_intent.setType("text/plain");
-            String st2 = "Y_GPSTracker\nБесплатный GPS Трекер\nwww.yellosoft-club.ru";
+            String st2 = "Y_GPSTracker\nБесплатный GPS Трекер\nhttp://yellosoft-club.ru";
             share_intent.putExtra(Intent.EXTRA_SUBJECT,st2);
             share_intent.putExtra(Intent.EXTRA_TEXT,st2);
             share_intent.putExtra(Intent.EXTRA_EMAIL,st2);
             startActivity(Intent.createChooser(share_intent, "Поделиться ☺"));
+
         } else if (id == R.id.Donate) {
              //
         } else if (id == R.id.About) {
-            //
+            Toast.makeText(main_settings.this, "\uD83D\uDE3C", Toast.LENGTH_SHORT).show();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+
     }
 
 }

@@ -21,8 +21,6 @@
         android:textColor="#ffffff"
         android:layout_alignStart="@+id/et_password" />
 
-
-
     <EditText android:layout_width="250dp"
         android:layout_height="50dp"
         android:hint="Password"

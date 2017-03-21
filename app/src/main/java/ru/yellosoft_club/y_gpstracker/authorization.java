@@ -28,9 +28,6 @@ public class authorization extends AppCompatActivity implements View.OnClickList
     private EditText ETpassword;
 
 
-    boolean cancel = false;
-    View focuscView = null;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +50,7 @@ public class authorization extends AppCompatActivity implements View.OnClickList
                 // [END_EXCLUDE]
             }
         };
+
         ETemail = (EditText) findViewById(et_email);
         ETpassword = (EditText) findViewById(R.id.et_password);
 
@@ -84,8 +82,8 @@ public class authorization extends AppCompatActivity implements View.OnClickList
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     Toast.makeText(authorization.this, "Aвторизация успешна", Toast.LENGTH_SHORT).show();
-
                     Intent intent = new Intent(authorization.this, main_settings.class);
+                    intent.putExtra("name", ETemail.getText().toString()); /////////////////////////////////////////
                     startActivity(intent);
                     finish();
                 } else {
@@ -102,9 +100,8 @@ public class authorization extends AppCompatActivity implements View.OnClickList
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     Toast.makeText(authorization.this, "Регистрация прошла успешно", Toast.LENGTH_SHORT).show();
-
                     Intent intent = new Intent(authorization.this, main_settings.class);
-                    intent.putExtra("Email", email);
+                    intent.putExtra("name", ETemail.getText().toString()); ////////////////////////////////////////
                     startActivity(intent);
                     finish();
                 } else
