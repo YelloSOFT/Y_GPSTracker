@@ -83,7 +83,7 @@ public class authorization extends AppCompatActivity implements View.OnClickList
                 if (task.isSuccessful()) {
                     Toast.makeText(authorization.this, "Aвторизация успешна", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(authorization.this, main_settings.class);
-                    intent.putExtra("name", ETemail.getText().toString()); /////////////////////////////////////////
+                    intent.putExtra("name", ETemail.getText().toString());
                     startActivity(intent);
                     finish();
                 } else {
@@ -101,7 +101,7 @@ public class authorization extends AppCompatActivity implements View.OnClickList
                 if (task.isSuccessful()) {
                     Toast.makeText(authorization.this, "Регистрация прошла успешно", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(authorization.this, main_settings.class);
-                    intent.putExtra("name", ETemail.getText().toString()); ////////////////////////////////////////
+                    intent.putExtra("name", ETemail.getText().toString());
                     startActivity(intent);
                     finish();
                 } else
