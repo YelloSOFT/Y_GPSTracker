@@ -67,7 +67,7 @@ implements NavigationView.OnNavigationItemSelectedListener {
         tvView.setText(name);
         //Нужен ещё уникальный ключ
 
-        
+
         tv = (TextView) findViewById(R.id.textView);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
@@ -84,8 +84,7 @@ implements NavigationView.OnNavigationItemSelectedListener {
                 startActivity(i);
             }
         };
-       // locationManager.requestLocationUpdates("gps", 5000, 0, listener);
-        //configure_button();
+        configure_button();
     }
 
     //Типа проверка на Google сервисы
@@ -112,6 +111,7 @@ implements NavigationView.OnNavigationItemSelectedListener {
                                     "Error creating map",Toast.LENGTH_SHORT).show();
                         }
                         try {
+
                             LatLng sydney = new LatLng(-33.867, 151.206);
                             googleMap.addMarker(new MarkerOptions().position(sydney).title("Я здесь" + sydney));
                             googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
@@ -124,27 +124,29 @@ implements NavigationView.OnNavigationItemSelectedListener {
             }
 
     }
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode){
-            case 10:
-              //  configure_button();
-                break;
-            default:
-                break;
-        }
-    }
-    //Немозможно инициализировать из манифеста uses-permission.
-   //void configure_button() {
+   void configure_button() {
 
-      //if (ActivityCompat.checkSelfPermission(this, Manifest.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-       //    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-          //      requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.INTERNET}, 10);
-          //  }
-          //  return;
-       // }
-  //  }
+       if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
+           if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION))
+           {
 
+           }
+           else
+           {
+
+               ActivityCompat.requestPermissions(this,
+                       new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                       10);
+            //Если разрешили - то включаем GPS
+
+               //Intent intent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+               //intent.putExtra("enabled", true);
+               //sendBroadcast(intent);
+
+               }
+           }
+       }
 
     @Override
     public void onBackPressed() {
