@@ -7,6 +7,8 @@
     android:fitsSystemWindows="true"
     tools:context="ru.yellosoft_club.y_gpstracker.main_settings">
 
+    <include layout="@layout/content_main_settings" />
+
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,22 +19,46 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:gravity="center"
-            android:layout_height="wrap_content"
-            android:text="Координаты: "
-            android:textSize="30sp"
-            android:id="@+id/textView"
-            android:layout_below="@+id/button"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
+            app:popupTheme="@style/AppTheme.PopupOverlay"
             android:layout_weight="1" />
 
-    </android.support.design.widget.AppBarLayout>
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:hint="Введите Адрес / Город"
+            android:textColor="#ffffff"
+            android:ems="10"
+            android:id="@+id/TFaddress"
+            android:layout_weight="1" />
 
-    <include layout="@layout/content_main_settings" />
+        <!--<Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="72dp"
+            android:layout_height="wrap_content"
+            android:text="Map Type"
+            android:id="@+id/Btype"
+            android:layout_gravity="right"
+            android:nestedScrollingEnabled="false"
+            android:onClick="changeType" /> -->
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Search"
+            android:id="@+id/Bsearch"
+            android:layout_gravity="right"
+            android:onClick="onSearch" />
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Map Type"
+            android:id="@+id/Btype"
+            android:layout_gravity="right"
+            android:nestedScrollingEnabled="false"
+            android:onClick="changeType" />
+
+    </android.support.design.widget.AppBarLayout>
 
 </android.support.design.widget.CoordinatorLayout>

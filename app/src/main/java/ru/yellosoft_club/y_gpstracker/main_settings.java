@@ -1,9 +1,14 @@
 package ru.yellosoft_club.y_gpstracker;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -32,7 +37,11 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
 import java.security.Security;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class main_settings extends AppCompatActivity
 
@@ -43,6 +52,7 @@ implements NavigationView.OnNavigationItemSelectedListener {
     private TextView tv;
     private LocationManager locationManager;
     private LocationListener listener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,10 +93,11 @@ implements NavigationView.OnNavigationItemSelectedListener {
                 Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(i);
             }
+
         };
         configure_button();
-    }
 
+    }
     //Типа проверка на Google сервисы
     //private boolean isGooglePlayServicesAvailable() {
       //  int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -97,6 +108,41 @@ implements NavigationView.OnNavigationItemSelectedListener {
       //      return false;
       //  }
    // }
+
+
+    //Лист постоянно выдаёт null.
+    public void onSearch(View view)
+    {
+        EditText location_tf = (EditText)findViewById(R.id.TFaddress);
+        String location = location_tf.getText().toString();
+        List<Address> addressList = null;
+        //List<Address> addressList = new List<>(Address);
+     if(location.equals(null) || location.isEmpty())
+     {}
+        else {
+         Geocoder geocoder = new Geocoder(this);
+         try {
+             addressList = geocoder.getFromLocationName(location, 1);
+         } catch (IOException e) {
+             e.printStackTrace();
+         }
+     }
+           Address address = addressList.get(0);
+           LatLng latLng = new LatLng(address.getLatitude() , address.getLongitude());
+           googleMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
+           googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+
+    }
+    public void changeType(View view)
+    {
+        if(googleMap.getMapType() == GoogleMap.MAP_TYPE_NORMAL)
+        {
+            googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+        }
+        else
+            googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+    }
+
 
     private void createMapView(){
 
@@ -112,10 +158,12 @@ implements NavigationView.OnNavigationItemSelectedListener {
                         }
                         try {
 
-                            LatLng sydney = new LatLng(-33.867, 151.206);
-                            googleMap.addMarker(new MarkerOptions().position(sydney).title("Я здесь" + sydney));
-                            googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-                            googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker").snippet("Y_GPS Tracker"));
+                            //LatLng sydney = new LatLng(-33.867, 151.206);
+                            //googleMap.addMarker(new MarkerOptions().position(sydney).title("Я здесь" + sydney));
+                            //googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+                            //googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker").snippet("Y_GPS Tracker"));
+
+
                             googleMap.setMyLocationEnabled(true);
                         }
                         catch (SecurityException e){Log.e ("" ,"No maps - no problems", e);}
@@ -123,30 +171,50 @@ implements NavigationView.OnNavigationItemSelectedListener {
                 });
             }
 
+
     }
+
+
+
    void configure_button() {
+       ActivityCompat.requestPermissions(this,
+               new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+              1);
+   }
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                          String permissions[], int[] grantResults) {
+       switch (requestCode) {
+            case 1: {
+              if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                  String provider = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+                  if (!provider.contains("gps"))
+                  { //GPS AФК to...
+                      final Intent poke = new Intent();
+                      poke.setClassName("com.android.settings", "com.android.settings.widget.SettingsAppWidgetProvider");
+                      poke.addCategory(Intent.CATEGORY_ALTERNATIVE);
+                      poke.setData(Uri.parse("3"));
+                      sendBroadcast(poke);
+                      //***************Включение настроек*********************//
+                      Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                      int LOCATION_SETTINGS_REQUEST = 0;
+                      startActivityForResult(i, LOCATION_SETTINGS_REQUEST);
+                      //***************Включение настроек*********************//
+                  }
+                  //Нужно сделать проверку по network..
+                }
+              else
+              {
+                  Toast.makeText(this, "Включите GPS! \uD83C\uDF0D", Toast.LENGTH_SHORT).show();
+              }
 
-       if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-           if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION))
-           {
-
-           }
-           else
-           {
-
-               ActivityCompat.requestPermissions(this,
-                       new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                       10);
-            //Если разрешили - то включаем GPS
-
-               //Intent intent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-               //intent.putExtra("enabled", true);
-               //sendBroadcast(intent);
-
-               }
-           }
+            }
+            return;
        }
+
+   }
+
 
     @Override
     public void onBackPressed() {
