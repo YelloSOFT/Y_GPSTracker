@@ -1,5 +1,7 @@
 package ru.yellosoft_club.y_gpstracker;
 
+import android.*;
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -31,11 +34,19 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 import java.security.Security;
@@ -45,13 +56,16 @@ import java.util.Locale;
 
 public class main_settings extends AppCompatActivity
 
-implements NavigationView.OnNavigationItemSelectedListener {
+implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,LocationListener {
 
 
     GoogleMap googleMap;
     private TextView tv;
     private LocationManager locationManager;
     private LocationListener listener;
+    private GoogleApiClient googleClient;
+
+
 
 
     @Override
@@ -63,31 +77,29 @@ implements NavigationView.OnNavigationItemSelectedListener {
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-               this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-       drawer.setDrawerListener(toggle);
-       toggle.syncState();
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         //Email в боковой части (навигации)
-        TextView tvView = (TextView)navigationView.getHeaderView(0).findViewById(R.id.textView2);
+        TextView tvView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.textView2);
         Intent intent = getIntent();
         String name = intent.getStringExtra("name");
         tvView.setText(name);
         //Нужен ещё уникальный ключ
 
-
+        //
         tv = (TextView) findViewById(R.id.textView);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-
-        createMapView();
         listener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 tv.append("\n " + location.getLongitude() + " " + location.getLatitude());
             }
+
             public void onProviderDisabled(String s) {
 
                 Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -95,9 +107,24 @@ implements NavigationView.OnNavigationItemSelectedListener {
             }
 
         };
+        //Вызовы "функций"//
+        createMapView();
         configure_button();
+        //Вызовы "функций"//
+
+        //GoogleApiClient googleClient;
 
     }
+
+    //Запись в дб
+    //офф.сайт ссылка https://firebase.google.com/docs/database/android/read-and-write
+    private DatabaseReference mDatabase;
+    mDatabase = FirebaseDatabase.getInstance().getReference();
+
+
+
+
+
     //Типа проверка на Google сервисы
     //private boolean isGooglePlayServicesAvailable() {
       //  int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -170,15 +197,11 @@ implements NavigationView.OnNavigationItemSelectedListener {
                     }
                 });
             }
-
-
     }
-
-
 
    void configure_button() {
        ActivityCompat.requestPermissions(this,
-               new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+               new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
               1);
    }
     @Override
@@ -214,7 +237,6 @@ implements NavigationView.OnNavigationItemSelectedListener {
        }
 
    }
-
 
     @Override
     public void onBackPressed() {
@@ -260,5 +282,45 @@ implements NavigationView.OnNavigationItemSelectedListener {
         return true;
 
     }
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        startLocationUpdate();
+    }
+    @Override
+    public void onConnectionSuspended(int i) {
+        stopLocationUpdate();
 
-}
+    }
+    private void startLocationUpdate() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        Log.d("Location", "Starting location update");
+        LocationRequest request = LocationRequest.create();
+        request.setInterval(1000);
+        request.setSmallestDisplacement(10);
+        LocationServices.FusedLocationApi.requestLocationUpdates(googleClient, request, (LocationListener) this);
+    }
+    private void stopLocationUpdate() {
+        Log.d("Location", "Stopping location update");
+        LocationServices.FusedLocationApi.removeLocationUpdates(googleClient, (LocationListener) this);
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+    @Override
+    public void onLocationChanged(Location location) {
+        if(location!=null)
+        {
+            Log.d("Location", "Recieved location: " + location.getLatitude() + " " + location.getLongitude() + "" + location.getTime());
+        }
+            else
+            {
+                Log.d("Location", "Invalid my code");
+            }
+        }
+    }
+
