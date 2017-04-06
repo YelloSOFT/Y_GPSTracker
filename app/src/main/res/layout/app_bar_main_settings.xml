@@ -22,42 +22,40 @@
             app:popupTheme="@style/AppTheme.PopupOverlay"
             android:layout_weight="1" />
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
         <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:inputType="textPersonName"
-            android:hint="Введите Адрес / Город"
+            android:hint="Введите Город"
             android:textColor="#ffffff"
-            android:ems="10"
             android:id="@+id/TFaddress"
             android:layout_weight="1" />
 
-        <!--<Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="72dp"
-            android:layout_height="wrap_content"
-            android:text="Map Type"
-            android:id="@+id/Btype"
-            android:layout_gravity="right"
-            android:nestedScrollingEnabled="false"
-            android:onClick="changeType" /> -->
         <Button
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Search"
+            android:text="Поиск"
             android:id="@+id/Bsearch"
             android:layout_gravity="right"
             android:onClick="onSearch" />
+
         <Button
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Map Type"
+            android:text="Вид"
             android:id="@+id/Btype"
             android:layout_gravity="right"
             android:nestedScrollingEnabled="false"
             android:onClick="changeType" />
+    </LinearLayout>
 
     </android.support.design.widget.AppBarLayout>
 

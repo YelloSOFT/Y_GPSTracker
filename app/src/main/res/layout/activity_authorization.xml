@@ -47,7 +47,6 @@
             android:id="@+id/btn_sign_in"
             android:elevation="0dp"
             android:layout_weight="0.19" />
-            <!--android:layout_weight="0.72" />-->
 
         <Button android:layout_width="137dp"
             android:layout_height="wrap_content"

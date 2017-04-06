@@ -65,9 +65,18 @@ public class authorization extends AppCompatActivity implements View.OnClickList
             return;
         }
         if (TextUtils.isEmpty(ETpassword.getText())) {
-            ETemail.setError(("Введите Пароль"));
+            ETpassword.setError(("Введите Пароль"));
             return;
         }
+        ETpassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(ETpassword.getText().length() < 5)
+                {
+                    ETpassword.setError("Пароль слишком маленький");
+                }
+            }
+        });
 
         if (view.getId() == R.id.btn_sign_in) {
             signin(ETemail.getText().toString(), ETpassword.getText().toString());

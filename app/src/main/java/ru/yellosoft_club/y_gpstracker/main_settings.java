@@ -10,6 +10,8 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +28,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,12 +50,19 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URL;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+
+import static ru.yellosoft_club.y_gpstracker.R.id.TFaddress;
 
 public class main_settings extends AppCompatActivity
 
@@ -64,8 +74,7 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
     private LocationManager locationManager;
     private LocationListener listener;
     private GoogleApiClient googleClient;
-
-
+    private EditText TF;
 
 
     @Override
@@ -112,131 +121,155 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         configure_button();
         //Вызовы "функций"//
 
-        //GoogleApiClient googleClient;
-
     }
 
     //Запись в дб
     //офф.сайт ссылка https://firebase.google.com/docs/database/android/read-and-write
+
+    //private DatabaseReference mDatabase;
+    //mDatabase = FirebaseDatabase.getInstance().getReference();
+
     private DatabaseReference mDatabase;
-    mDatabase = FirebaseDatabase.getInstance().getReference();
+    @IgnoreExtraProperties
+    public class User {
 
+        public String username;
+        public String email;
 
+        public User() {
+            // Default constructor required for calls to DataSnapshot.getValue(User.class)
+        }
 
+        public User(String username, String email) {
+            this.username = username;
+            this.email = email;
+        }
+    }
+    private void writeNewUser(String userId, String name, String email) {
+        User user = new User(name, email);
+
+        mDatabase.child("users/Latitude").child(userId).setValue(user);
+    }
 
 
     //Типа проверка на Google сервисы
     //private boolean isGooglePlayServicesAvailable() {
-      //  int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        //if (ConnectionResult.SUCCESS == status) {
-        //    return true;
-       // } else {
-        //    GooglePlayServicesUtil.getErrorDialog(status, this, 0).show();
-      //      return false;
-      //  }
-   // }
+    //  int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+    //if (ConnectionResult.SUCCESS == status) {
+    //    return true;
+    // } else {
+    //    GooglePlayServicesUtil.getErrorDialog(status, this, 0).show();
+    //      return false;
+    //  }
+    // }
 
 
-    //Лист постоянно выдаёт null.
-    public void onSearch(View view)
-    {
-        EditText location_tf = (EditText)findViewById(R.id.TFaddress);
+    public void onSearch(View view) {
+        EditText location_tf = (EditText) findViewById(R.id.TFaddress);
         String location = location_tf.getText().toString();
         List<Address> addressList = null;
-        //List<Address> addressList = new List<>(Address);
-     if(location.equals(null) || location.isEmpty())
-     {}
-        else {
-         Geocoder geocoder = new Geocoder(this);
-         try {
-             addressList = geocoder.getFromLocationName(location, 1);
-         } catch (IOException e) {
-             e.printStackTrace();
-         }
-     }
-           Address address = addressList.get(0);
-           LatLng latLng = new LatLng(address.getLatitude() , address.getLongitude());
-           googleMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
-           googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+
+        //Цвет фона чёрный
+        TF = (EditText) findViewById(TFaddress);
+        if (TextUtils.isEmpty(TF.getText())) {
+            TF.setError(("Введите Город"));
+            return;
+        }
+
+        if (location == null) {
+        } else {
+            Geocoder geocoder = new Geocoder(this);
+            try {
+                addressList = geocoder.getFromLocationName(location, 1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        Address address = addressList.get(0);
+        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+
+        Intent intent = new Intent(this,main_settings.class);
+        intent.putExtra("gorod_key", TF.getText().toString());
+        String gorod = intent.getStringExtra("gorod_key");
+        TF.setText(gorod);
+
+        googleMap.addMarker(new MarkerOptions().position(latLng).title("Здесь - " + gorod));
+        googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
 
     }
-    public void changeType(View view)
-    {
-        if(googleMap.getMapType() == GoogleMap.MAP_TYPE_NORMAL)
-        {
+
+    public void changeType(View view) {
+        if (googleMap.getMapType() == GoogleMap.MAP_TYPE_NORMAL) {
             googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-        }
-        else
+        } else
             googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
     }
 
 
-    private void createMapView(){
+    private void createMapView() {
 
-            if(null == googleMap){
-                ((MapFragment) getFragmentManager().findFragmentById(
-                        R.id.mapView)).getMapAsync(new OnMapReadyCallback() {
-                    @Override
-                    public void onMapReady(GoogleMap googleMap) {
-                        main_settings.this.googleMap = googleMap;
-                        if(null == googleMap) {
-                            Toast.makeText(getApplicationContext(),
-                                    "Error creating map",Toast.LENGTH_SHORT).show();
-                        }
-                        try {
-
-                            //LatLng sydney = new LatLng(-33.867, 151.206);
-                            //googleMap.addMarker(new MarkerOptions().position(sydney).title("Я здесь" + sydney));
-                            //googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-                            //googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker").snippet("Y_GPS Tracker"));
-
-
-                            googleMap.setMyLocationEnabled(true);
-                        }
-                        catch (SecurityException e){Log.e ("" ,"No maps - no problems", e);}
+        if (null == googleMap) {
+            ((MapFragment) getFragmentManager().findFragmentById(
+                    R.id.mapView)).getMapAsync(new OnMapReadyCallback() {
+                @Override
+                public void onMapReady(GoogleMap googleMap) {
+                    main_settings.this.googleMap = googleMap;
+                    if (null == googleMap) {
+                        Toast.makeText(getApplicationContext(),
+                                "Error creating map", Toast.LENGTH_SHORT).show();
                     }
-                });
-            }
+                    try {
+
+                        //LatLng sydney = new LatLng(-33.867, 151.206);
+                        //googleMap.addMarker(new MarkerOptions().position(sydney).title("Я здесь" + sydney));
+                        //googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+                        //googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker").snippet("Y_GPS Tracker"));
+
+
+                        googleMap.setMyLocationEnabled(true);
+                    } catch (SecurityException e) {
+                        Log.e("", "No maps - no problems", e);
+                    }
+                }
+            });
+        }
     }
 
-   void configure_button() {
-       ActivityCompat.requestPermissions(this,
-               new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-              1);
-   }
+    void configure_button() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                1);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                          String permissions[], int[] grantResults) {
-       switch (requestCode) {
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
             case 1: {
-              if (grantResults.length > 0
+                if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                  String provider = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-                  if (!provider.contains("gps"))
-                  { //GPS AФК to...
-                      final Intent poke = new Intent();
-                      poke.setClassName("com.android.settings", "com.android.settings.widget.SettingsAppWidgetProvider");
-                      poke.addCategory(Intent.CATEGORY_ALTERNATIVE);
-                      poke.setData(Uri.parse("3"));
-                      sendBroadcast(poke);
-                      //***************Включение настроек*********************//
-                      Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                      int LOCATION_SETTINGS_REQUEST = 0;
-                      startActivityForResult(i, LOCATION_SETTINGS_REQUEST);
-                      //***************Включение настроек*********************//
-                  }
-                  //Нужно сделать проверку по network..
-                }
-              else
-              {
-                  Toast.makeText(this, "Включите GPS! \uD83C\uDF0D", Toast.LENGTH_SHORT).show();
-              }
+                    String provider = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+                    if (!provider.contains("gps")) {
+                        //GPS AФК to...
+                        final Intent poke = new Intent();
+                        poke.setClassName("com.android.settings", "com.android.settings.widget.SettingsAppWidgetProvider");
+                        poke.addCategory(Intent.CATEGORY_ALTERNATIVE);
+                        poke.setData(Uri.parse("3"));
+                        sendBroadcast(poke);
+                        //***************Включение настроек*********************//
+                        Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        int LOCATION_SETTINGS_REQUEST = 0;
+                        startActivityForResult(i, LOCATION_SETTINGS_REQUEST);
+                        //***************Включение настроек*********************//
+                    }
 
+                } else {
+                    Toast.makeText(this, "Включите GPS! \uD83C\uDF0D", Toast.LENGTH_SHORT).show();
+                }
             }
             return;
-       }
-
-   }
+        }
+    }
 
     @Override
     public void onBackPressed() {
@@ -323,4 +356,6 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
             }
         }
     }
+
+
 
