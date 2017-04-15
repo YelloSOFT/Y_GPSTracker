@@ -29,7 +29,8 @@
         android:id="@+id/et_password"
         android:layout_centerHorizontal="true"
         android:textColor="#ffffff"
-        android:layout_below="@+id/et_email" />
+        android:layout_below="@+id/et_email"
+        android:password="true" />
 
     <LinearLayout android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -41,20 +42,61 @@
         android:layout_marginLeft="49dp"
         android:layout_marginStart="49dp">
 
-        <Button android:layout_width="144dp"
-            android:layout_height="match_parent"
-            android:text="Вход"
-            android:id="@+id/btn_sign_in"
-            android:elevation="0dp"
-            android:layout_weight="0.19" />
+    <Button android:layout_width="144dp"
+        android:layout_height="match_parent"
+        android:text="Вход"
+        android:id="@+id/btn_sign_in"
+        android:elevation="0dp"
+        android:layout_weight="0.19" />
 
-        <Button android:layout_width="137dp"
-            android:layout_height="wrap_content"
-            android:text="Регистрация"
-            android:id="@+id/btn_registration"
-            android:layout_weight="0.14" />
-        <!-- android:layout_weight="0.05" -->
+    <Button android:layout_width="137dp"
+        android:layout_height="wrap_content"
+        android:text="Регистрация"
+        android:id="@+id/btn_registration"
+        android:layout_weight="0.14" />
+    </LinearLayout>
 
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="75dp"
+        android:weightSum="2"
+        android:layout_below="@+id/et_password"
+        android:gravity="center_horizontal">
+
+     <TextView
+          android:text="Loading..."
+          android:layout_height="45dp"
+          android:textSize="30dp"
+          android:textColor="#ffffff"
+          android:id="@+id/textView4"
+          android:layout_marginTop="15dp"
+          android:layout_width="match_parent"
+         android:gravity="center_horizontal"
+         android:cursorVisible="false"
+         android:visibility="invisible" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="120dp"
+        android:weightSum="2"
+        android:layout_below="@+id/et_password"
+        android:gravity="center_horizontal">
+
+    <pl.droidsonroids.gif.GifImageView
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:src="@drawable/loading"
+        android:layout_marginBottom="150dp"
+        android:layout_weight="1.49"
+        android:id="@+id/gif"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible" />
     </LinearLayout>
 
 </RelativeLayout>

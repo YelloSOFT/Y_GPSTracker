@@ -2,12 +2,14 @@ package ru.yellosoft_club.y_gpstracker;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.MapFragment;
@@ -16,6 +18,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import pl.droidsonroids.gif.GifImageView;
 
 import static ru.yellosoft_club.y_gpstracker.R.id.et_email;
 
@@ -26,6 +29,8 @@ public class authorization extends AppCompatActivity implements View.OnClickList
     private static final String TAG = "EmailPassword";
     private EditText ETemail;
     private EditText ETpassword;
+    private TextView load;
+    private GifImageView gif;
 
 
     @Override
@@ -53,6 +58,9 @@ public class authorization extends AppCompatActivity implements View.OnClickList
 
         ETemail = (EditText) findViewById(et_email);
         ETpassword = (EditText) findViewById(R.id.et_password);
+        load = (TextView) findViewById(R.id.textView4);
+        gif = (GifImageView) findViewById(R.id.gif);
+
 
         findViewById(R.id.btn_sign_in).setOnClickListener(this);
         findViewById(R.id.btn_registration).setOnClickListener(this);
@@ -86,6 +94,8 @@ public class authorization extends AppCompatActivity implements View.OnClickList
     }
 
     public void signin(String email, String password) {
+        load.setVisibility(View.VISIBLE);
+        gif.setVisibility(View.VISIBLE);
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -104,6 +114,8 @@ public class authorization extends AppCompatActivity implements View.OnClickList
     }
 
     public void registration(final String email, String password) {
+        load.setVisibility(View.VISIBLE);
+        gif.setVisibility(View.VISIBLE);
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -117,7 +129,5 @@ public class authorization extends AppCompatActivity implements View.OnClickList
                     Toast.makeText(authorization.this, "Ошибка! Введите корректные данные", Toast.LENGTH_SHORT).show();
             }
         });
-
-                //Вывести про короткий пароль
     }
 }

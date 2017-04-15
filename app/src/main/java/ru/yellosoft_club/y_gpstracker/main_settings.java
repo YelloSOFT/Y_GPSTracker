@@ -1,28 +1,19 @@
 package ru.yellosoft_club.y_gpstracker;
 
-import android.*;
 import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -42,25 +33,17 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.*;
-import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.URL;
-import java.security.Security;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-
 
 import static ru.yellosoft_club.y_gpstracker.R.id.TFaddress;
 
@@ -123,32 +106,38 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
 
     }
 
+
     //Запись в дб
     //офф.сайт ссылка https://firebase.google.com/docs/database/android/read-and-write
-
-    //private DatabaseReference mDatabase;
-    //mDatabase = FirebaseDatabase.getInstance().getReference();
+    private DatabaseReference mDatabase;
+    mDatabase = FirebaseDatabase.getInstance().getReference();
 
     private DatabaseReference mDatabase;
     @IgnoreExtraProperties
     public class User {
 
-        public String username;
-        public String email;
+        public String Latitude;
+        public String Longitude;
+        public String Date;
+        public String IMEI;
 
         public User() {
             // Default constructor required for calls to DataSnapshot.getValue(User.class)
         }
-
-        public User(String username, String email) {
-            this.username = username;
-            this.email = email;
+        public User(String Latitude, String Longitude, String Date, String IMEI) {
+            this.Latitude = Latitude;
+            this.Longitude = Longitude;
+            this.Date = Date;
+            this.IMEI = IMEI;
         }
     }
-    private void writeNewUser(String userId, String name, String email) {
-        User user = new User(name, email);
+    private void writeNewUser(String userId, String Latitude, String Longitude, String Date, String IMEI) {
+        User user = new User(Latitude, Longitude, Date, IMEI);
 
-        mDatabase.child("users/Latitude").child(userId).setValue(user);
+        mDatabase.child("user").child("Latitude");
+        mDatabase.child("user").child("Longitude");
+       // mDatabase.child("user").child("Date");
+       //mDatabase.child("user").child("IMEI");
     }
 
 
@@ -168,16 +157,18 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         EditText location_tf = (EditText) findViewById(R.id.TFaddress);
         String location = location_tf.getText().toString();
         List<Address> addressList = null;
-
-        //Цвет фона чёрный
+        //Цвет фона чёрный + если ненаходи город - крах
         TF = (EditText) findViewById(TFaddress);
         if (TextUtils.isEmpty(TF.getText())) {
-            TF.setError(("Введите Город"));
+            TF.setError(("Введите Улицу или Город"));
             return;
         }
 
-        if (location == null) {
-        } else {
+
+        if (location == null)
+        {
+        } else
+        {
             Geocoder geocoder = new Geocoder(this);
             try {
                 addressList = geocoder.getFromLocationName(location, 1);
