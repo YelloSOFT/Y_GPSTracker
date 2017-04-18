@@ -40,6 +40,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.io.IOException;
@@ -58,6 +59,7 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
     private LocationListener listener;
     private GoogleApiClient googleClient;
     private EditText TF;
+    private DatabaseReference mDatabase;
 
 
     @Override
@@ -69,7 +71,7 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
@@ -104,42 +106,42 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         configure_button();
         //Вызовы "функций"//
 
+        DatabaseReference mDatabase;
+        mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
 
     //Запись в дб
     //офф.сайт ссылка https://firebase.google.com/docs/database/android/read-and-write
-    private DatabaseReference mDatabase;
-    mDatabase = FirebaseDatabase.getInstance().getReference();
-
-    private DatabaseReference mDatabase;
     @IgnoreExtraProperties
     public class User {
 
+        public String userId;
         public String Latitude;
         public String Longitude;
         public String Date;
-        public String IMEI;
+       // public String IMEI = "777";
 
-        public User() {
+        public User(String latitude, String longitude) {
             // Default constructor required for calls to DataSnapshot.getValue(User.class)
         }
-        public User(String Latitude, String Longitude, String Date, String IMEI) {
+        public User(String usrId,String Latitude, String LongitudeI) {
+            this.userId = usrId;
             this.Latitude = Latitude;
             this.Longitude = Longitude;
-            this.Date = Date;
-            this.IMEI = IMEI;
+            //this.Date = Date;
+            //this.IMEI = IMEI;
         }
     }
-    private void writeNewUser(String userId, String Latitude, String Longitude, String Date, String IMEI) {
-        User user = new User(Latitude, Longitude, Date, IMEI);
+    private void writeNewUser(String userId, String Latitude, String Longitude) {
+        User user = new User(Latitude, Longitude);
 
-        mDatabase.child("user").child("Latitude");
-        mDatabase.child("user").child("Longitude");
-       // mDatabase.child("user").child("Date");
-       //mDatabase.child("user").child("IMEI");
+        DatabaseReference users = mDatabase.child("users").child(userId);
+        users.child("Latitude").setValue(user.Latitude);
+        users.child("Longitude").setValue(user.Longitude);
+        //users.child("Date").setValue(user.Date);
+        //users.child("IMEI").setValue(user.IMEI);
     }
-
 
     //Типа проверка на Google сервисы
     //private boolean isGooglePlayServicesAvailable() {
@@ -335,18 +337,21 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
     @Override
     public void onLocationChanged(Location location) {
         if(location!=null)
         {
-            Log.d("Location", "Recieved location: " + location.getLatitude() + " " + location.getLongitude() + "" + location.getTime());
+            Log.d("Location", "Recieved location: " + location.getLatitude() + " " + location.getLongitude());
+            writeNewUser("",String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()));
         }
             else
             {
                 Log.d("Location", "Invalid my code");
             }
         }
-    }
+}
+
 
 
 
