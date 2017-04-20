@@ -39,6 +39,7 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.IgnoreExtraProperties;
@@ -61,7 +62,6 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
     private EditText TF;
     private DatabaseReference mDatabase;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,8 +83,10 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         Intent intent = getIntent();
         String name = intent.getStringExtra("name");
         tvView.setText(name);
-        //Нужен ещё уникальный ключ
-
+        //Uid в боковой части (навигации) (не полностью)
+        TextView tvView2 = (TextView) navigationView.getHeaderView(0).findViewById(R.id.textView);
+        String uid;
+        uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         //
         tv = (TextView) findViewById(R.id.textView);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -106,43 +108,63 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         configure_button();
         //Вызовы "функций"//
 
-        DatabaseReference mDatabase;
         mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        googleClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+    //    Запись в бд
+    @Override
+    protected void onStart() {
+        super.onStart();
+        googleClient.connect();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopLocationUpdate();
+        googleClient.disconnect();
+    }
+    public static class UserLocation {
 
-    //Запись в дб
-    //офф.сайт ссылка https://firebase.google.com/docs/database/android/read-and-write
-    @IgnoreExtraProperties
-    public class User {
+        private double latitude;
+        private double longitude;
 
-        public String userId;
-        public String Latitude;
-        public String Longitude;
-        public String Date;
-       // public String IMEI = "777";
-
-        public User(String latitude, String longitude) {
-            // Default constructor required for calls to DataSnapshot.getValue(User.class)
+        public UserLocation(double latitude, double longitude) {
+            this.latitude = latitude;
+            this.longitude = longitude;
         }
-        public User(String usrId,String Latitude, String LongitudeI) {
-            this.userId = usrId;
-            this.Latitude = Latitude;
-            this.Longitude = Longitude;
-            //this.Date = Date;
-            //this.IMEI = IMEI;
+
+        public double getLatitude() {
+            return latitude;
+        }
+
+        public void setLatitude(double latitude) {
+            this.latitude = latitude;
+        }
+
+        public double getLongitude() {
+            return longitude;
+        }
+
+        public void setLongitude(double longitude) {
+            this.longitude = longitude;
         }
     }
-    private void writeNewUser(String userId, String Latitude, String Longitude) {
-        User user = new User(Latitude, Longitude);
 
-        DatabaseReference users = mDatabase.child("users").child(userId);
-        users.child("Latitude").setValue(user.Latitude);
-        users.child("Longitude").setValue(user.Longitude);
-        //users.child("Date").setValue(user.Date);
-        //users.child("IMEI").setValue(user.IMEI);
+    private void writeNewUser(String userId, String latitude, String longitude) {
+        UserLocation location = new UserLocation(Double.valueOf(latitude), Double.valueOf(longitude));
+
+        DatabaseReference userReference = mDatabase.child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        DatabaseReference userLocationReference = userReference.child("location");
+        userLocationReference.setValue(location);
+
     }
-
+//    Запись в бд
     //Типа проверка на Google сервисы
     //private boolean isGooglePlayServicesAvailable() {
     //  int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -154,7 +176,6 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
     //  }
     // }
 
-
     public void onSearch(View view) {
         EditText location_tf = (EditText) findViewById(R.id.TFaddress);
         String location = location_tf.getText().toString();
@@ -165,7 +186,6 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
             TF.setError(("Введите Улицу или Город"));
             return;
         }
-
 
         if (location == null)
         {
@@ -197,7 +217,6 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         } else
             googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
     }
-
 
     private void createMapView() {
 
@@ -340,6 +359,7 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
 
     @Override
     public void onLocationChanged(Location location) {
+
         if(location!=null)
         {
             Log.d("Location", "Recieved location: " + location.getLatitude() + " " + location.getLongitude());
