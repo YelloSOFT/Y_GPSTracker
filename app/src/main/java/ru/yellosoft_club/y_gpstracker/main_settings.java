@@ -45,6 +45,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import static ru.yellosoft_club.y_gpstracker.R.id.TFaddress;
@@ -129,14 +131,17 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         stopLocationUpdate();
         googleClient.disconnect();
     }
+
     public static class UserLocation {
 
         private double latitude;
         private double longitude;
+        private String date;
 
-        public UserLocation(double latitude, double longitude) {
+        public UserLocation(double latitude, double longitude, String date) {
             this.latitude = latitude;
             this.longitude = longitude;
+            this.date = date;
         }
 
         public double getLatitude() {
@@ -154,17 +159,26 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         public void setLongitude(double longitude) {
             this.longitude = longitude;
         }
+
+        public String getDate() {
+            return date;
+        }
+
+        public void setDate (String date) {
+            this.date = date;
+    }
     }
 
-    private void writeNewUser(String userId, String latitude, String longitude) {
-        UserLocation location = new UserLocation(Double.valueOf(latitude), Double.valueOf(longitude));
+        private void writeNewUser(String userId, String latitude, String longitude, String date) {
+        UserLocation location = new UserLocation(Double.valueOf(latitude), Double.valueOf(longitude),String.valueOf(date));
 
         DatabaseReference userReference = mDatabase.child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
         DatabaseReference userLocationReference = userReference.child("location");
         userLocationReference.setValue(location);
 
     }
-//    Запись в бд
+    //    Запись в бд
+
     //Типа проверка на Google сервисы
     //private boolean isGooglePlayServicesAvailable() {
     //  int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -360,10 +374,14 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
     @Override
     public void onLocationChanged(Location location) {
 
+        String mask = "dd.MM.yyyy 'Times' HH:mm:ss";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(mask);
+        String date = simpleDateFormat.format(new Date());
+
         if(location!=null)
         {
-            Log.d("Location", "Recieved location: " + location.getLatitude() + " " + location.getLongitude());
-            writeNewUser("",String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()));
+            Log.d("Location", "Recieved location: " + location.getLatitude() + " " + location.getLongitude() + "" + String.valueOf(date));
+            writeNewUser("",String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(date));
         }
             else
             {
@@ -371,7 +389,3 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
             }
         }
 }
-
-
-
-
