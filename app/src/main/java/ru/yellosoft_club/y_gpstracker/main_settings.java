@@ -1,12 +1,15 @@
 package ru.yellosoft_club.y_gpstracker;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -167,8 +170,9 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         public void setDate (String date) {
             this.date = date;
     }
-    }
 
+
+    }
         private void writeNewUser(String userId, String latitude, String longitude, String date) {
         UserLocation location = new UserLocation(Double.valueOf(latitude), Double.valueOf(longitude),String.valueOf(date));
 
@@ -178,6 +182,32 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
 
     }
     //    Запись в бд
+
+    //Проверка на интеренет соединение
+    public static boolean hasConnection(final Context context)
+    {
+        ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifiInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if (wifiInfo != null && wifiInfo.isConnected())
+        {
+            return true;
+        }
+        wifiInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        if (wifiInfo != null && wifiInfo.isConnected())
+        {
+            return true;
+        }
+        wifiInfo = cm.getActiveNetworkInfo();
+        if (wifiInfo != null && wifiInfo.isConnected())
+        {
+            return true;
+        }
+        return false;
+
+        Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        int LOCATION_SETTINGS_REQUEST = 0;
+        startActivityForResult(i, LOCATION_SETTINGS_REQUEST);
+    }
 
     //Типа проверка на Google сервисы
     //private boolean isGooglePlayServicesAvailable() {
@@ -288,6 +318,7 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
                         startActivityForResult(i, LOCATION_SETTINGS_REQUEST);
                         //***************Включение настроек*********************//
                     }
+
 
                 } else {
                     Toast.makeText(this, "Включите GPS! \uD83C\uDF0D", Toast.LENGTH_SHORT).show();
