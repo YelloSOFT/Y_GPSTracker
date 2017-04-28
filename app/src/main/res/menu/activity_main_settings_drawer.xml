@@ -11,9 +11,16 @@
             android:icon="@drawable/donate"
             android:title="Donate" />
         <item
+            android:id="@+id/email_dev"
+            android:icon="@drawable/email_dev"
+            android:title="Письмо разработчику" />
+        <item
+            android:id="@+id/friend_search"
+            android:icon="@drawable/search"
+            android:title="Найти друга" />
+        <item
             android:id="@+id/About"
             android:icon="@drawable/about"
             android:title="О приложении" />
     </group>
-
 </menu>

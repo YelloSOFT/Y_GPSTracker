@@ -1,15 +1,13 @@
 package ru.yellosoft_club.y_gpstracker;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -17,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.util.Pair;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -42,13 +41,18 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -56,7 +60,7 @@ import static ru.yellosoft_club.y_gpstracker.R.id.TFaddress;
 
 public class main_settings extends AppCompatActivity
 
-implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,LocationListener {
+implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
 
     GoogleMap googleMap;
@@ -66,6 +70,11 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
     private GoogleApiClient googleClient;
     private EditText TF;
     private DatabaseReference mDatabase;
+    private DatabaseReference userReference;
+    private DatabaseReference userLocationReference;
+    private ChildEventListener userLocationListener;
+    private Polyline route;
+    private List<Pair<String, UserLocation>> locations = new ArrayList<Pair<String, UserLocation>>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +85,7 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-        this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
@@ -114,6 +123,8 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         //Вызовы "функций"//
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
+        userReference = mDatabase.child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        userLocationReference = userReference.child("locations");
 
         googleClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -121,11 +132,55 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
                 .addApi(LocationServices.API)
                 .build();
     }
-    //    Запись в бд
+
+    // Запись в бд
     @Override
     protected void onStart() {
         super.onStart();
         googleClient.connect();
+
+        userLocationListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                locations.add(new Pair<String, UserLocation>(dataSnapshot.getKey(), dataSnapshot.getValue(UserLocation.class)));
+
+                if (locations.size() > 1000) {
+                    Pair<String, UserLocation> pair = locations.remove(0);
+                    userLocationReference.child(pair.first).removeValue();
+                }
+
+                if (route != null) {
+                    route.remove();
+                }
+                PolylineOptions options = new PolylineOptions();
+                for (Pair<String, UserLocation> location : locations) {
+                    options.add(new LatLng(location.second.getLatitude(), location.second.getLongitude()));
+                }
+                options.color(Color.BLACK);
+                route = googleMap.addPolyline(options);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                Log.d("Database", "Removed child: " + dataSnapshot.getKey());
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        userLocationReference.addChildEventListener(userLocationListener);
     }
 
     @Override
@@ -133,6 +188,7 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         super.onStop();
         stopLocationUpdate();
         googleClient.disconnect();
+        userLocationReference.removeEventListener(userLocationListener);
     }
 
     public static class UserLocation {
@@ -140,6 +196,10 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         private double latitude;
         private double longitude;
         private String date;
+
+        public UserLocation() {
+
+        }
 
         public UserLocation(double latitude, double longitude, String date) {
             this.latitude = latitude;
@@ -167,74 +227,29 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
             return date;
         }
 
-        public void setDate (String date) {
+        public void setDate(String date) {
             this.date = date;
-    }
-
-
-    }
-        private void writeNewUser(String userId, String latitude, String longitude, String date) {
-        UserLocation location = new UserLocation(Double.valueOf(latitude), Double.valueOf(longitude),String.valueOf(date));
-
-        DatabaseReference userReference = mDatabase.child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        DatabaseReference userLocationReference = userReference.child("location");
-        userLocationReference.setValue(location);
-
-    }
-    //    Запись в бд
-
-    //Проверка на интеренет соединение
-    public static boolean hasConnection(final Context context)
-    {
-        ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo wifiInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (wifiInfo != null && wifiInfo.isConnected())
-        {
-            return true;
         }
-        wifiInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        if (wifiInfo != null && wifiInfo.isConnected())
-        {
-            return true;
-        }
-        wifiInfo = cm.getActiveNetworkInfo();
-        if (wifiInfo != null && wifiInfo.isConnected())
-        {
-            return true;
-        }
-        return false;
-
-        Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-        int LOCATION_SETTINGS_REQUEST = 0;
-        startActivityForResult(i, LOCATION_SETTINGS_REQUEST);
     }
 
-    //Типа проверка на Google сервисы
-    //private boolean isGooglePlayServicesAvailable() {
-    //  int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-    //if (ConnectionResult.SUCCESS == status) {
-    //    return true;
-    // } else {
-    //    GooglePlayServicesUtil.getErrorDialog(status, this, 0).show();
-    //      return false;
-    //  }
-    // }
+    private void writeNewUser(String userId, String latitude, String longitude, String date) {
+        UserLocation location = new UserLocation(Double.valueOf(latitude), Double.valueOf(longitude), String.valueOf(date));
+
+        userLocationReference.push().setValue(location);
+    }
 
     public void onSearch(View view) {
         EditText location_tf = (EditText) findViewById(R.id.TFaddress);
         String location = location_tf.getText().toString();
         List<Address> addressList = null;
-        //Цвет фона чёрный + если ненаходи город - крах
         TF = (EditText) findViewById(TFaddress);
         if (TextUtils.isEmpty(TF.getText())) {
             TF.setError(("Введите Улицу или Город"));
             return;
         }
 
-        if (location == null)
-        {
-        } else
-        {
+        if (location == null) {
+        } else {
             Geocoder geocoder = new Geocoder(this);
             try {
                 addressList = geocoder.getFromLocationName(location, 1);
@@ -242,10 +257,16 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
                 e.printStackTrace();
             }
         }
+
+        if (addressList == null || addressList.size() == 0) {
+            Toast.makeText(this, "Улица или Город - не найдены \uD83D\uDE32", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         Address address = addressList.get(0);
         LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
 
-        Intent intent = new Intent(this,main_settings.class);
+        Intent intent = new Intent(this, main_settings.class);
         intent.putExtra("gorod_key", TF.getText().toString());
         String gorod = intent.getStringExtra("gorod_key");
         TF.setText(gorod);
@@ -318,8 +339,6 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
                         startActivityForResult(i, LOCATION_SETTINGS_REQUEST);
                         //***************Включение настроек*********************//
                     }
-
-
                 } else {
                     Toast.makeText(this, "Включите GPS! \uD83C\uDF0D", Toast.LENGTH_SHORT).show();
                 }
@@ -353,34 +372,39 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
             Intent share_intent = new Intent((Intent.ACTION_SEND));
             share_intent.setType("text/plain");
             String st2 = "Y_GPSTracker\nБесплатный GPS Трекер\nhttp://yellosoft-club.ru";
-            share_intent.putExtra(Intent.EXTRA_SUBJECT,st2);
-            share_intent.putExtra(Intent.EXTRA_TEXT,st2);
-            share_intent.putExtra(Intent.EXTRA_EMAIL,st2);
+            share_intent.putExtra(Intent.EXTRA_SUBJECT, st2);
+            share_intent.putExtra(Intent.EXTRA_TEXT, st2);
+            share_intent.putExtra(Intent.EXTRA_EMAIL, st2);
             startActivity(Intent.createChooser(share_intent, "Поделиться ☺"));
-
         } else if (id == R.id.Donate) {
-             //
+            //
+        } else if (id == R.id.email_dev) {
+            Intent intent = new Intent(main_settings.this, email_developer.class);
+            startActivity(intent);
+        } else if (id == R.id.friend_search) {
+            Intent intent = new Intent(main_settings.this, friend_search.class);
+            startActivity(intent);
         } else if (id == R.id.About) {
             Toast.makeText(main_settings.this, "\uD83D\uDE3C", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(main_settings.this, about.class);
             startActivity(intent);
-
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-
     }
+
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         startLocationUpdate();
     }
+
     @Override
     public void onConnectionSuspended(int i) {
         stopLocationUpdate();
 
     }
+
     private void startLocationUpdate() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -389,9 +413,10 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         Log.d("Location", "Starting location update");
         LocationRequest request = LocationRequest.create();
         request.setInterval(1000);
-        request.setSmallestDisplacement(10);
+        request.setSmallestDisplacement(1);
         LocationServices.FusedLocationApi.requestLocationUpdates(googleClient, request, (LocationListener) this);
     }
+
     private void stopLocationUpdate() {
         Log.d("Location", "Stopping location update");
         LocationServices.FusedLocationApi.removeLocationUpdates(googleClient, (LocationListener) this);
@@ -405,18 +430,15 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
     @Override
     public void onLocationChanged(Location location) {
 
-        String mask = "dd.MM.yyyy 'Times' HH:mm:ss";
+        String mask = "dd.MM.yyyy 'Time' HH:mm:ss";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(mask);
         String date = simpleDateFormat.format(new Date());
 
-        if(location!=null)
-        {
+        if (location != null) {
             Log.d("Location", "Recieved location: " + location.getLatitude() + " " + location.getLongitude() + "" + String.valueOf(date));
-            writeNewUser("",String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(date));
+            writeNewUser("", String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(date));
+        } else {
+            Log.d("Location", "Invalid my code");
         }
-            else
-            {
-                Log.d("Location", "Invalid my code");
-            }
-        }
+    }
 }
