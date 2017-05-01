@@ -99,7 +99,7 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         tvView.setText(name);
         //Uid в боковой части (навигации) (не полностью)
         TextView tvView2 = (TextView) navigationView.getHeaderView(0).findViewById(R.id.textView);
-        String uid;
+        String uid = null;
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         //
         tv = (TextView) findViewById(R.id.textView);
@@ -383,6 +383,9 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
             startActivity(intent);
         } else if (id == R.id.friend_search) {
             Intent intent = new Intent(main_settings.this, friend_search.class);
+            startActivity(intent);
+        } else if (id == R.id.friend_search) {
+            Intent intent = new Intent(main_settings.this, save_friends.class);
             startActivity(intent);
         } else if (id == R.id.About) {
             Toast.makeText(main_settings.this, "\uD83D\uDE3C", Toast.LENGTH_SHORT).show();

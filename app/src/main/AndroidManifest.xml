@@ -39,7 +39,8 @@
             android:name=".about"
             android:label="Y_GPS Tracker" />
         <activity android:name=".email_developer" />
-        <activity android:name=".friend_search"></activity>
+        <activity android:name=".friend_search" />
+        <activity android:name=".save_friends"></activity>
     </application>
 
 </manifest>
