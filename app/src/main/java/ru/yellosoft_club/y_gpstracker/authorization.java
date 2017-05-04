@@ -10,9 +10,13 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.text.TextUtils;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,6 +42,7 @@ public class authorization extends AppCompatActivity implements View.OnClickList
     private EditText ETpassword;
     private TextView load;
     private GifImageView gif;
+    private CheckBox chek;
 
 
     @Override
@@ -108,7 +113,26 @@ public class authorization extends AppCompatActivity implements View.OnClickList
         //Вызовы "функций"//
         isGooglePlayServicesAvailable();
         //Вызовы "функций"//
+
+        ////http://stackoverflow.com/questions/3685790/how-to-switch-between-hide-and-view-password
+        chek = (CheckBox) findViewById(R.id.checkBox);
+
+        chek.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (chek.isChecked()) {
+                    ETpassword.setTransformationMethod(null);
+                }
+                else
+                {
+                    ETpassword.setSelection(ETpassword.getText().length());
+                }
+            }
+        });
     }
+
+
 
     public void signin(String email, String password) {
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {

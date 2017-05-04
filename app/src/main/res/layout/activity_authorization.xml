@@ -31,8 +31,8 @@
         android:id="@+id/et_password"
         android:layout_centerHorizontal="true"
         android:textColor="#ffffff"
-        android:layout_below="@+id/et_email"
-        android:password="true" />
+        android:layout_below="@+id/et_email"/>
+        <!--android:password="true" -->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -46,12 +46,11 @@
         android:layout_marginStart="49dp">
 
     <Button
-        android:layout_width="144dp"
+        android:layout_width="147dp"
         android:layout_height="match_parent"
         android:text="Вход"
         android:id="@+id/btn_sign_in"
-        android:elevation="0dp"
-        android:layout_weight="0.19" />
+        android:elevation="0dp" />
 
     <Button
         android:layout_width="137dp"
@@ -59,6 +58,14 @@
         android:text="Регистрация"
         android:id="@+id/btn_registration"
         android:layout_weight="0.14" />
+
+    <CheckBox
+            android:layout_width="107dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/checkBox"
+            android:textColor="#FFFFFF"
+            android:layout_weight="0.78" />
+
     </LinearLayout>
 
 
@@ -70,17 +77,17 @@
         android:layout_below="@+id/et_password"
         android:gravity="center_horizontal">
 
-     <TextView
-        android:text="Loading..."
-        android:layout_height="45dp"
-        android:textSize="30dp"
-        android:textColor="#ffffff"
-        android:id="@+id/textView4"
-        android:layout_marginTop="15dp"
-        android:layout_width="match_parent"
-        android:gravity="center_horizontal"
-        android:cursorVisible="false"
-        android:visibility="invisible" />
+        <TextView
+           android:text="Loading..."
+           android:layout_height="45dp"
+           android:textSize="30dp"
+           android:textColor="#ffffff"
+           android:id="@+id/textView4"
+           android:layout_marginTop="15dp"
+           android:layout_width="match_parent"
+           android:gravity="center_horizontal"
+           android:cursorVisible="false"
+           android:visibility="invisible" />
 
     </LinearLayout>
 

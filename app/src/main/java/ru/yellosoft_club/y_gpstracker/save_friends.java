@@ -1,43 +1,86 @@
 package ru.yellosoft_club.y_gpstracker;
 
-import android.graphics.Color;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.provider.Settings;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+
+import static android.support.test.InstrumentationRegistry.getContext;
 
 public class save_friends extends AppCompatActivity {
 
-    //http://startandroid.ru/ru/uroki/vse-uroki-spiskom/81-urok-41-ispolzuem-layoutinflater-dlja-sozdanija-spiska.html
-    String[] name = { "1", "2", "3", "4", "5", "6",
-            "Костя", "Игорь" };
-
-    int[] colors = new int[2];
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_save_friends);
 
-        colors[0] = Color.parseColor("#559966CC");
-        colors[1] = Color.parseColor("#55336699");
+        ListView listView = (ListView) findViewById(R.id.listView);
+        final EditText editText = (EditText) findViewById(R.id.editText);
 
-        LinearLayout linLayout = (LinearLayout) findViewById(R.id.linLayout);
+        // Создаём пустой массив для хранения
+        final ArrayList<String> catnames = new ArrayList<String>();
 
-        LayoutInflater ltInflater = getLayoutInflater();
+        // Создаём адаптер ArrayAdapter, чтобы привязать массив к ListView
+        final ArrayAdapter<String> adapter;
+        adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_1, catnames);
+        // Привяжем массив через адаптер к ListView
+        listView.setAdapter(adapter);
 
-        for (int i = 0; i < name.length; i++) {
-            Log.d("myLogs", "i = " + i);
-            View item = ltInflater.inflate(R.layout.item, linLayout, false);
-            item.getLayoutParams().width = LayoutParams.MATCH_PARENT;
-            item.setBackgroundColor(colors[i % 2]);
-            linLayout.addView(item);
-        }
+        // Прослушиваем нажатия клавиш
+        editText.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                // TODO Auto-generated method stub
+                if (event.getAction() == KeyEvent.ACTION_DOWN)
+                    if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                        catnames.add(0, editText.getText().toString());
+                        adapter.notifyDataSetChanged();
+                        editText.setText("");
+                        return true;
+                    }
+                return false;
+            }
+        });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View itemClicked, int position, long id) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(save_friends.this);
+                builder.setTitle("Функции:");
+                builder.setPositiveButton("Редактировать", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                       //Функция редактирования
+                    }
+                });
+                builder.setNegativeButton("Удалить", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Функция удаления
+                    }
+                });
+                builder.create().show();
+            }
+        });
+
 
     }
 
-
-
 }
+
+
+

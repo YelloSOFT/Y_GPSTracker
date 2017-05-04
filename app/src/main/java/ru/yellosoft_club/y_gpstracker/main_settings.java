@@ -44,6 +44,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -79,6 +80,15 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Intent i = new Intent(this, authorization.class);
+            startActivity(i);
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main_settings);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -95,12 +105,14 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         //Email в боковой части (навигации)
         TextView tvView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.textView2);
         Intent intent = getIntent();
-        String name = intent.getStringExtra("name");
-        tvView.setText(name);
-        //Uid в боковой части (навигации) (не полностью)
+        String email = "Email: ";
+        tvView.setText(email + user.getEmail());
+        //Udid в боковой части (навигации)
         TextView tvView2 = (TextView) navigationView.getHeaderView(0).findViewById(R.id.textView);
-        String uid = null;
-        uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String udid = null;
+        String udid2 = "Udid: ";
+        udid = user.getUid();
+        tvView2.setText(udid2 + udid);
         //
         tv = (TextView) findViewById(R.id.textView);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -115,7 +127,6 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
                 Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(i);
             }
-
         };
         //Вызовы "функций"//
         createMapView();
@@ -384,7 +395,7 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         } else if (id == R.id.friend_search) {
             Intent intent = new Intent(main_settings.this, friend_search.class);
             startActivity(intent);
-        } else if (id == R.id.friend_search) {
+        } else if (id == R.id.save_friends) {
             Intent intent = new Intent(main_settings.this, save_friends.class);
             startActivity(intent);
         } else if (id == R.id.About) {

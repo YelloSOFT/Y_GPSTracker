@@ -19,6 +19,10 @@
             android:icon="@drawable/search"
             android:title="Найти друга" />
         <item
+            android:id="@+id/save_friends"
+            android:icon="@drawable/save_friends"
+            android:title="Друзья" />
+        <item
             android:id="@+id/About"
             android:icon="@drawable/about"
             android:title="О приложении" />
