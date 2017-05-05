@@ -1,86 +1,89 @@
 package ru.yellosoft_club.y_gpstracker;
 
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.provider.Settings;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 
-import java.util.ArrayList;
-
-import static android.support.test.InstrumentationRegistry.getContext;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class save_friends extends AppCompatActivity {
+
+    private RecyclerView recyclerView;
+
+    private DatabaseReference mDatabase;
+    private DatabaseReference userReference;
+    private DatabaseReference userFriendsReference;
+    private ChildEventListener userFriendsListener;
+
+    private FriendsAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_save_friends);
 
-        ListView listView = (ListView) findViewById(R.id.listView);
-        final EditText editText = (EditText) findViewById(R.id.editText);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        adapter = new FriendsAdapter();
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
 
-        // Создаём пустой массив для хранения
-        final ArrayList<String> catnames = new ArrayList<String>();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        userReference = mDatabase.child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        userFriendsReference = userReference.child("friends");
 
-        // Создаём адаптер ArrayAdapter, чтобы привязать массив к ListView
-        final ArrayAdapter<String> adapter;
-        adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, catnames);
-        // Привяжем массив через адаптер к ListView
-        listView.setAdapter(adapter);
-
-        // Прослушиваем нажатия клавиш
-        editText.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                // TODO Auto-generated method stub
-                if (event.getAction() == KeyEvent.ACTION_DOWN)
-                    if (keyCode == KeyEvent.KEYCODE_ENTER) {
-                        catnames.add(0, editText.getText().toString());
-                        adapter.notifyDataSetChanged();
-                        editText.setText("");
-                        return true;
-                    }
-                return false;
-            }
-        });
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        adapter.setOnFriendClickListener(new OnFriendClickedListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View itemClicked, int position, long id) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(save_friends.this);
-                builder.setTitle("Функции:");
-                builder.setPositiveButton("Редактировать", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                       //Функция редактирования
-                    }
-                });
-                builder.setNegativeButton("Удалить", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Функция удаления
-                    }
-                });
-                builder.create().show();
+            public void onFriendClicked(UserFriend friend) {
+                SelectedFriends.getInstance().addFriend(friend);
+                finish();
             }
         });
-
-
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        userFriendsListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                UserFriend friend = dataSnapshot.getValue(UserFriend.class);
+                adapter.addFriend(friend);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        userFriendsReference.addChildEventListener(userFriendsListener);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        userFriendsReference.removeEventListener(userFriendsListener);
+    }
+
+
 }
-
-
-

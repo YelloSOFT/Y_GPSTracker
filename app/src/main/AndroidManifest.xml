@@ -16,17 +16,18 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity android:name=".authorization">
+        android:theme="@style/Theme.AppCompat.NoActionBar"
+        android:name=".MyApplication">
+        <activity android:name=".authorization"></activity>
+        <activity
+            android:name=".main_settings"
+            android:label="@string/title_activity_main_settings">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".main_settings"
-            android:label="@string/title_activity_main_settings" />
 
         <meta-data
             android:name="com.google.android.gms.version"
@@ -41,6 +42,8 @@
         <activity android:name=".email_developer" />
         <activity android:name=".friend_search" />
         <activity android:name=".save_friends"></activity>
+
+        <service android:name=".LocationTrackingService"></service>
     </application>
 
 </manifest>

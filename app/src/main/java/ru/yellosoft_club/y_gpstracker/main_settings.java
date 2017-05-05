@@ -11,8 +11,6 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.util.Pair;
@@ -30,11 +28,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -61,14 +55,14 @@ import static ru.yellosoft_club.y_gpstracker.R.id.TFaddress;
 
 public class main_settings extends AppCompatActivity
 
-implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+implements NavigationView.OnNavigationItemSelectedListener {
 
 
     GoogleMap googleMap;
     private TextView tv;
     private LocationManager locationManager;
     private LocationListener listener;
-    private GoogleApiClient googleClient;
+
     private EditText TF;
     private DatabaseReference mDatabase;
     private DatabaseReference userReference;
@@ -76,6 +70,9 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
     private ChildEventListener userLocationListener;
     private Polyline route;
     private List<Pair<String, UserLocation>> locations = new ArrayList<Pair<String, UserLocation>>();
+    private List<TrackedUserFriend> trackedFriends = new ArrayList<>();
+
+    private boolean firstFix = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,16 +100,15 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         navigationView.setNavigationItemSelectedListener(this);
 
         //Email в боковой части (навигации)
+
         TextView tvView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.textView2);
         Intent intent = getIntent();
-        String email = "Email: ";
-        tvView.setText(email + user.getEmail());
-        //Udid в боковой части (навигации)
+        tvView.setText(user.getEmail());
+        //Uid в боковой части (навигации) (не полностью)
         TextView tvView2 = (TextView) navigationView.getHeaderView(0).findViewById(R.id.textView);
-        String udid = null;
-        String udid2 = "Udid: ";
-        udid = user.getUid();
-        tvView2.setText(udid2 + udid);
+        String uid = null;
+        uid = user.getUid();
+        tvView2.setText(uid);
         //
         tv = (TextView) findViewById(R.id.textView);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -127,6 +123,7 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
                 Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(i);
             }
+
         };
         //Вызовы "функций"//
         createMapView();
@@ -136,19 +133,15 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         mDatabase = FirebaseDatabase.getInstance().getReference();
         userReference = mDatabase.child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
         userLocationReference = userReference.child("locations");
-
-        googleClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
     }
 
     // Запись в бд
     @Override
     protected void onStart() {
         super.onStart();
-        googleClient.connect();
+
+        final String mask = "dd.MM.yyyy 'Time' HH:mm:ss";
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(mask);
 
         userLocationListener = new ChildEventListener() {
             @Override
@@ -160,6 +153,21 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
                     userLocationReference.child(pair.first).removeValue();
                 }
 
+                for (int i = 0; i < locations.size(); ++i) {
+                    Pair<String, UserLocation> pair = locations.get(i);
+                    try {
+                        Date now = new Date();
+                        Date date = simpleDateFormat.parse(pair.second.getDate());
+                        if (date.getYear() < now.getYear() || date.getMonth() < now.getMonth() || date.getDay() < now.getDay()) {
+                            locations.remove(i);
+                        } else {
+                            i++;
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
                 if (route != null) {
                     route.remove();
                 }
@@ -169,6 +177,13 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
                 }
                 options.color(Color.BLACK);
                 route = googleMap.addPolyline(options);
+
+                if (locations.size() > 0 && !firstFix) {
+                    firstFix = true;
+                    UserLocation location = locations.get(0).second;
+                    LatLng firstLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(firstLocation, 14));
+                }
             }
 
             @Override
@@ -192,61 +207,103 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
             }
         };
         userLocationReference.addChildEventListener(userLocationListener);
+
+        int[] color = new int[] {
+                0xffff0000,
+                0xff00ff00,
+                0xff0000ff
+        };
+        int colorIndex = 0;
+
+        for (UserFriend friend : SelectedFriends.getInstance().getSelectedFriends()) {
+            TrackedUserFriend trackedFriend = new TrackedUserFriend(friend, color[colorIndex]);
+            trackedFriend.startTracking();
+            trackedFriends.add(trackedFriend);
+
+            colorIndex++;
+            if (colorIndex == color.length) {
+                colorIndex = 0;
+            }
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        stopLocationUpdate();
-        googleClient.disconnect();
+
         userLocationReference.removeEventListener(userLocationListener);
+
+        locations.clear();
+
+        for (TrackedUserFriend friend : trackedFriends) {
+            friend.stopTracking();
+        }
+        trackedFriends.clear();
     }
 
-    public static class UserLocation {
+    public class TrackedUserFriend {
 
-        private double latitude;
-        private double longitude;
-        private String date;
+        private UserFriend friend;
 
-        public UserLocation() {
+        private DatabaseReference friendReference;
+        private DatabaseReference friendLocationReference;
+        private ChildEventListener friendLocationListener;
 
+        private int color;
+        private Polyline friendRoute;
+
+        private List<UserLocation> friendLocations = new ArrayList<UserLocation>();
+
+        public TrackedUserFriend(UserFriend friend, int color) {
+            this.friend = friend;
+            friendReference = mDatabase.child("users").child(friend.getUdid());
+            friendLocationReference = userReference.child("locations");
+            this.color = color;
         }
 
-        public UserLocation(double latitude, double longitude, String date) {
-            this.latitude = latitude;
-            this.longitude = longitude;
-            this.date = date;
+        public void startTracking() {
+            userLocationListener = new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    friendLocations.add(dataSnapshot.getValue(UserLocation.class));
+
+                    if (friendRoute != null) {
+                        friendRoute.remove();
+                    }
+                    PolylineOptions options = new PolylineOptions();
+                    for (UserLocation location : friendLocations) {
+                        options.add(new LatLng(location.getLatitude(), location.getLongitude()));
+                    }
+                    options.color(color);
+                    friendRoute = googleMap.addPolyline(options);
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            };
+            userLocationReference.addChildEventListener(userLocationListener);
         }
 
-        public double getLatitude() {
-            return latitude;
+        private void stopTracking() {
+            userLocationReference.removeEventListener(userLocationListener);
         }
 
-        public void setLatitude(double latitude) {
-            this.latitude = latitude;
-        }
-
-        public double getLongitude() {
-            return longitude;
-        }
-
-        public void setLongitude(double longitude) {
-            this.longitude = longitude;
-        }
-
-        public String getDate() {
-            return date;
-        }
-
-        public void setDate(String date) {
-            this.date = date;
-        }
-    }
-
-    private void writeNewUser(String userId, String latitude, String longitude, String date) {
-        UserLocation location = new UserLocation(Double.valueOf(latitude), Double.valueOf(longitude), String.valueOf(date));
-
-        userLocationReference.push().setValue(location);
     }
 
     public void onSearch(View view) {
@@ -306,20 +363,17 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
                         Toast.makeText(getApplicationContext(),
                                 "Error creating map", Toast.LENGTH_SHORT).show();
                     }
-                    try {
-
-                        //LatLng sydney = new LatLng(-33.867, 151.206);
-                        //googleMap.addMarker(new MarkerOptions().position(sydney).title("Я здесь" + sydney));
-                        //googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-                        //googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker").snippet("Y_GPS Tracker"));
-
-
-                        googleMap.setMyLocationEnabled(true);
-                    } catch (SecurityException e) {
-                        Log.e("", "No maps - no problems", e);
-                    }
+                    attempToDisplayMyLocation();
                 }
             });
+        }
+    }
+
+    private void attempToDisplayMyLocation() {
+        try {
+            googleMap.setMyLocationEnabled(true);
+        } catch (SecurityException e) {
+            Log.e("", "No maps - no problems", e);
         }
     }
 
@@ -349,6 +403,10 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
                         int LOCATION_SETTINGS_REQUEST = 0;
                         startActivityForResult(i, LOCATION_SETTINGS_REQUEST);
                         //***************Включение настроек*********************//
+                    } else {
+                        attempToDisplayMyLocation();
+                        Intent i = new Intent(MyApplication.getInstance(), LocationTrackingService.class);
+                        MyApplication.getInstance().startService(i);
                     }
                 } else {
                     Toast.makeText(this, "Включите GPS! \uD83C\uDF0D", Toast.LENGTH_SHORT).show();
@@ -408,51 +466,5 @@ implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.Conn
         return true;
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        startLocationUpdate();
-    }
 
-    @Override
-    public void onConnectionSuspended(int i) {
-        stopLocationUpdate();
-
-    }
-
-    private void startLocationUpdate() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
-        Log.d("Location", "Starting location update");
-        LocationRequest request = LocationRequest.create();
-        request.setInterval(1000);
-        request.setSmallestDisplacement(1);
-        LocationServices.FusedLocationApi.requestLocationUpdates(googleClient, request, (LocationListener) this);
-    }
-
-    private void stopLocationUpdate() {
-        Log.d("Location", "Stopping location update");
-        LocationServices.FusedLocationApi.removeLocationUpdates(googleClient, (LocationListener) this);
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-
-        String mask = "dd.MM.yyyy 'Time' HH:mm:ss";
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(mask);
-        String date = simpleDateFormat.format(new Date());
-
-        if (location != null) {
-            Log.d("Location", "Recieved location: " + location.getLatitude() + " " + location.getLongitude() + "" + String.valueOf(date));
-            writeNewUser("", String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(date));
-        } else {
-            Log.d("Location", "Invalid my code");
-        }
-    }
 }

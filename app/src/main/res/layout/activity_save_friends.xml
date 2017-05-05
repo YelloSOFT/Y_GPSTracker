@@ -7,18 +7,9 @@
     android:fitsSystemWindows="true"
     tools:context="ru.yellosoft_club.y_gpstracker.save_friends">
 
-    <ListView
-        android:id="@+id/listView"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </ListView>
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:hint="Введите udid друга"
-        android:textColor="#ffffff"
-        android:id="@+id/editText"/>
+        android:layout_height="match_parent"></android.support.v7.widget.RecyclerView>
 
 </android.support.design.widget.CoordinatorLayout>

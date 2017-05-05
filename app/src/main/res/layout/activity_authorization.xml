@@ -18,28 +18,36 @@
         android:textSize="20dp"
         android:layout_marginTop="212dp"
         android:layout_alignParentTop="true"
-        android:layout_alignLeft="@+id/et_password"
+        android:layout_alignLeft="@+id/et_password_layout"
         android:textColor="#ffffff"
-        android:layout_alignStart="@+id/et_password" />
+        android:layout_alignStart="@+id/et_password_layout" />
 
-    <EditText
+    <android.support.design.widget.TextInputLayout
         android:layout_width="250dp"
         android:layout_height="50dp"
+        app:passwordToggleEnabled="true"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/et_email"
+        android:textColorHint="@color/grey_50"
+        android:id="@+id/et_password_layout">
+
+    <android.support.design.widget.TextInputEditText
+        android:id="@+id/et_password"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:hint="Password"
         android:textColorHint="@color/grey_50"
         android:textSize="20dp"
-        android:id="@+id/et_password"
-        android:layout_centerHorizontal="true"
         android:textColor="#ffffff"
-        android:layout_below="@+id/et_email"/>
-        <!--android:password="true" -->
+        android:inputType="textPassword"/>
+    </android.support.design.widget.TextInputLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:weightSum="1"
-        android:layout_below="@+id/et_password"
+        android:layout_below="@+id/et_password_layout"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_marginLeft="49dp"
@@ -59,35 +67,27 @@
         android:id="@+id/btn_registration"
         android:layout_weight="0.14" />
 
-    <CheckBox
-            android:layout_width="107dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/checkBox"
-            android:textColor="#FFFFFF"
-            android:layout_weight="0.78" />
-
     </LinearLayout>
-
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="75dp"
         android:weightSum="2"
-        android:layout_below="@+id/et_password"
+        android:layout_below="@+id/et_password_layout"
         android:gravity="center_horizontal">
 
-        <TextView
-           android:text="Loading..."
-           android:layout_height="45dp"
-           android:textSize="30dp"
-           android:textColor="#ffffff"
-           android:id="@+id/textView4"
-           android:layout_marginTop="15dp"
-           android:layout_width="match_parent"
-           android:gravity="center_horizontal"
-           android:cursorVisible="false"
-           android:visibility="invisible" />
+    <TextView
+        android:text="Loading..."
+        android:layout_height="45dp"
+        android:textSize="30dp"
+        android:textColor="#ffffff"
+        android:id="@+id/textView4"
+        android:layout_marginTop="15dp"
+        android:layout_width="match_parent"
+        android:gravity="center_horizontal"
+        android:cursorVisible="false"
+        android:visibility="invisible" />
 
     </LinearLayout>
 
@@ -96,7 +96,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="120dp"
         android:weightSum="2"
-        android:layout_below="@+id/et_password"
+        android:layout_below="@+id/et_password_layout"
         android:gravity="center_horizontal">
 
     <pl.droidsonroids.gif.GifImageView
