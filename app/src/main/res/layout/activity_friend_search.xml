@@ -28,128 +28,128 @@
             android:id="@+id/udid" />
     </LinearLayout>
 
+    <!--
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_marginTop="200dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/four"
+                android:weightSum="1">
 
-    <LinearLayout
-            android:orientation="horizontal"
-            android:layout_marginTop="115dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/three"
-            android:weightSum="1">
+        <TextView
+                android:text="История:"
+                android:textSize="35dp"
+                android:textColor="#FFFFFF"
+                android:layout_marginLeft="115dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView1"
+                android:visibility="invisible" />
 
-    <CheckBox
-            android:text="Отобразить доп.функции"
-            android:layout_width="107dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/checkBox"
-            android:textColor="#FFFFFF"
-            android:layout_weight="0.78" />
+        </LinearLayout>
 
-    </LinearLayout>
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_marginTop="235dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/five"
+                android:weightSum="1">
 
-    <LinearLayout
-            android:orientation="horizontal"
-            android:layout_marginTop="200dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/four"
-            android:weightSum="1">
+         <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:hint="Введите udid друга"
+                android:textColor="#ffffff"
+                android:id="@+id/udid2"
+                android:visibility="invisible" />
 
-    <TextView
-            android:text="История:"
-            android:textSize="35dp"
-            android:textColor="#FFFFFF"
-            android:layout_marginLeft="115dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView1"
-            android:visibility="invisible" />
+        </LinearLayout>
 
-    </LinearLayout>
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_marginTop="280dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/six"
+                android:weightSum="1">
 
-    <LinearLayout
-            android:orientation="horizontal"
-            android:layout_marginTop="235dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/five"
-            android:weightSum="1">
+        <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:hint="Введите дату"
+                android:textColor="#ffffff"
+                android:id="@+id/udid3"
+                android:visibility="invisible" />
 
-     <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPersonName"
-            android:hint="Введите udid друга"
-            android:textColor="#ffffff"
-            android:id="@+id/udid2"
-            android:visibility="invisible" />
+        </LinearLayout>
 
-    </LinearLayout>
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_marginTop="335dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/seven"
+                android:weightSum="1">
 
-    <LinearLayout
-            android:orientation="horizontal"
-            android:layout_marginTop="280dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/six"
-            android:weightSum="1">
+        <Button
+                android:text="Отобразить путь за эту дату"
+                android:layout_width="315dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:id="@+id/date_butt"
+                android:visibility="invisible" />
 
-    <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPersonName"
-            android:hint="Введите дату"
-            android:textColor="#ffffff"
-            android:id="@+id/udid3"
-            android:visibility="invisible" />
+        </LinearLayout>
+    -->
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_marginTop="55dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/too"
+                android:weightSum="1">
 
-    </LinearLayout>
+         <Button
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Отобразить на карте"
+                android:id="@+id/search"
+                android:layout_gravity="right"
+                android:onClick="SearchClick" />
 
-    <LinearLayout
-            android:orientation="horizontal"
-            android:layout_marginTop="335dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/seven"
-            android:weightSum="1">
+         <Button
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Добавить в друзья"
+                android:id="@+id/add"
+                android:layout_gravity="right"
+                android:nestedScrollingEnabled="false"
+                android:onClick="AddClick" />
 
-    <Button
-            android:text="Отобразить путь за эту дату"
-            android:layout_width="315dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:id="@+id/date_butt"
-            android:visibility="invisible" />
+        </LinearLayout>
+    <!--
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_marginTop="115dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/three"
+                android:weightSum="1">
 
-    </LinearLayout>
+        <CheckBox
+                android:text="Отобразить доп.функции"
+                android:layout_width="107dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/checkBox"
+                android:textColor="#FFFFFF"
+                android:layout_weight="0.78" />
 
-    <LinearLayout
-            android:orientation="horizontal"
-            android:layout_marginTop="55dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/too"
-            android:weightSum="1">
-
-     <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Отобразить на карте"
-            android:id="@+id/search"
-            android:layout_gravity="right"
-            android:onClick="SearchClick" />
-
-     <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Добавить в друзья"
-            android:id="@+id/add"
-            android:layout_gravity="right"
-            android:nestedScrollingEnabled="false"
-            android:onClick="AddClick" />
-
-    </LinearLayout>
-
-</android.support.design.widget.CoordinatorLayout>
+        </LinearLayout>
+    -->
+    </android.support.design.widget.CoordinatorLayout>

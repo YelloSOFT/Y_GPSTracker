@@ -100,12 +100,17 @@ implements NavigationView.OnNavigationItemSelectedListener {
         navigationView.setNavigationItemSelectedListener(this);
 
         //Email в боковой части (навигации)
-
         TextView tvView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.textView2);
         Intent intent = getIntent();
+        String email = "Email: ";
+        tvView.setText(email + user.getEmail());
         tvView.setText(user.getEmail());
-        //Uid в боковой части (навигации) (не полностью)
+        //Uid в боковой части (навигации)
         TextView tvView2 = (TextView) navigationView.getHeaderView(0).findViewById(R.id.textView);
+        String udid = null;
+        String udid2 = "Udid: ";
+        udid = user.getUid();
+        tvView2.setText(udid2 + udid);
         String uid = null;
         uid = user.getUid();
         tvView2.setText(uid);

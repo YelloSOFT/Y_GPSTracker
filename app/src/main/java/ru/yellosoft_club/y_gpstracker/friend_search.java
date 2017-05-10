@@ -47,7 +47,7 @@ public class friend_search extends AppCompatActivity {
         userFriendsReference = userReference.child("friends");
 
         udid = (EditText) findViewById(R.id.udid);
-        udid2 = (EditText) findViewById(R.id.udid2);
+        /*udid2 = (EditText) findViewById(R.id.udid2);
         udid3 = (EditText) findViewById(R.id.udid3);
         date_butt = (Button) findViewById(R.id.date_butt);
         history = (TextView) findViewById(R.id.textView1);
@@ -71,7 +71,7 @@ public class friend_search extends AppCompatActivity {
                 }
 
             }
-        });
+        });*/
     }
 
     @Override
