@@ -113,16 +113,16 @@
                 android:id="@+id/too"
                 android:weightSum="1">
 
-         <Button
-                style="?android:attr/buttonStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Отобразить на карте"
-                android:id="@+id/search"
-                android:layout_gravity="right"
-                android:onClick="SearchClick" />
+            <Button
+                   style="?android:attr/buttonStyleSmall"
+                   android:layout_width="185dp"
+                   android:layout_height="wrap_content"
+                   android:text="Друзья"
+                   android:id="@+id/search"
+                   android:layout_gravity="right"
+                   android:onClick="SearchClick" />
 
-         <Button
+            <Button
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

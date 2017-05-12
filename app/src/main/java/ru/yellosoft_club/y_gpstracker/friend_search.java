@@ -4,12 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -113,13 +115,20 @@ public class friend_search extends AppCompatActivity {
     }
 
     public void AddClick(View v) {
+        if (TextUtils.isEmpty(udid.getText())) {
+            udid.setError(("Введите udid пользователя"));
+            return;
+        }
+        else {
         userFriendsReference.push().setValue(new UserFriend(udid.getText().toString()));
-
+        Toast.makeText(this, "Пользователь добавлен в друзья! \uD83D\uDC4D \nСписок друзей можно посмотреть в меню 'Друзья'", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void SearchClick(View v) {
         Intent intent = new Intent(this, save_friends.class);
         startActivity(intent);
+        Toast.makeText(this, "Выберите друга для отображения его на карте \uD83C\uDF0D", Toast.LENGTH_SHORT).show();
     }
 
 

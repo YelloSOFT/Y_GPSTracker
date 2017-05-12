@@ -10,6 +10,8 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -48,7 +50,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import static ru.yellosoft_club.y_gpstracker.R.id.TFaddress;
@@ -57,18 +61,18 @@ public class main_settings extends AppCompatActivity
 
 implements NavigationView.OnNavigationItemSelectedListener {
 
+    private Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
     GoogleMap googleMap;
     private TextView tv;
     private LocationManager locationManager;
     private LocationListener listener;
-
     private EditText TF;
     private DatabaseReference mDatabase;
     private DatabaseReference userReference;
     private DatabaseReference userLocationReference;
     private ChildEventListener userLocationListener;
-    private Polyline route;
+    private List<Polyline> route = new ArrayList<>();
     private List<Pair<String, UserLocation>> locations = new ArrayList<Pair<String, UserLocation>>();
     private List<TrackedUserFriend> trackedFriends = new ArrayList<>();
 
@@ -104,16 +108,12 @@ implements NavigationView.OnNavigationItemSelectedListener {
         Intent intent = getIntent();
         String email = "Email: ";
         tvView.setText(email + user.getEmail());
-        tvView.setText(user.getEmail());
         //Uid в боковой части (навигации)
         TextView tvView2 = (TextView) navigationView.getHeaderView(0).findViewById(R.id.textView);
         String udid = null;
-        String udid2 = "Udid: ";
+        String udid2 = "Udid: \n";
         udid = user.getUid();
         tvView2.setText(udid2 + udid);
-        String uid = null;
-        uid = user.getUid();
-        tvView2.setText(uid);
         //
         tv = (TextView) findViewById(R.id.textView);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -139,8 +139,7 @@ implements NavigationView.OnNavigationItemSelectedListener {
         userReference = mDatabase.child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
         userLocationReference = userReference.child("locations");
     }
-
-    // Запись в бд
+    //Запись в бд
     @Override
     protected void onStart() {
         super.onStart();
@@ -149,43 +148,41 @@ implements NavigationView.OnNavigationItemSelectedListener {
         final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(mask);
 
         userLocationListener = new ChildEventListener() {
+
+            private boolean isTodayLocation(UserLocation location) {
+                try {
+                    Calendar now = GregorianCalendar.getInstance();
+                    Date date = simpleDateFormat.parse(location.getDate());
+                    Calendar calendar = GregorianCalendar.getInstance();
+                    calendar.setTime(date);
+                    if (calendar.get(Calendar.YEAR) < now.get(Calendar.YEAR) || calendar.get(Calendar.MONTH) < now.get(Calendar.MONTH) || calendar.get(Calendar.DAY_OF_MONTH) < now.get(Calendar.DAY_OF_MONTH)) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                locations.add(new Pair<String, UserLocation>(dataSnapshot.getKey(), dataSnapshot.getValue(UserLocation.class)));
+                UserLocation location = dataSnapshot.getValue(UserLocation.class);
+                if (!isTodayLocation(location)) {
+                    return;
+                }
+
+                locations.add(new Pair<String, UserLocation>(dataSnapshot.getKey(), location));
 
                 if (locations.size() > 1000) {
                     Pair<String, UserLocation> pair = locations.remove(0);
                     userLocationReference.child(pair.first).removeValue();
                 }
 
-                for (int i = 0; i < locations.size(); ++i) {
-                    Pair<String, UserLocation> pair = locations.get(i);
-                    try {
-                        Date now = new Date();
-                        Date date = simpleDateFormat.parse(pair.second.getDate());
-                        if (date.getYear() < now.getYear() || date.getMonth() < now.getMonth() || date.getDay() < now.getDay()) {
-                            locations.remove(i);
-                        } else {
-                            i++;
-                        }
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
-                if (route != null) {
-                    route.remove();
-                }
-                PolylineOptions options = new PolylineOptions();
-                for (Pair<String, UserLocation> location : locations) {
-                    options.add(new LatLng(location.second.getLatitude(), location.second.getLongitude()));
-                }
-                options.color(Color.BLACK);
-                route = googleMap.addPolyline(options);
+                schedulePolylineRedraw();
 
                 if (locations.size() > 0 && !firstFix) {
                     firstFix = true;
-                    UserLocation location = locations.get(0).second;
                     LatLng firstLocation = new LatLng(location.getLatitude(), location.getLongitude());
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(firstLocation, 14));
                 }
@@ -213,10 +210,15 @@ implements NavigationView.OnNavigationItemSelectedListener {
         };
         userLocationReference.addChildEventListener(userLocationListener);
 
+
         int[] color = new int[] {
-                0xffff0000,
-                0xff00ff00,
-                0xff0000ff
+                0xffff0000, // RED
+                0xff00ff00, // GREEN
+                0xff0000ff,  // BLUE
+                0xff8b00ff, //Фиолетовый (цвет добавляется после 0хff)
+                0xffffa500,   0xff964b00,
+                0xff5b646e,   0xffb097a7
+
         };
         int colorIndex = 0;
 
@@ -229,6 +231,57 @@ implements NavigationView.OnNavigationItemSelectedListener {
             if (colorIndex == color.length) {
                 colorIndex = 0;
             }
+        }
+    }
+
+    private void schedulePolylineRedraw() {
+        mainThreadHandler.removeCallbacks(redrawPolyline);
+        mainThreadHandler.postDelayed(redrawPolyline, 100);
+    }
+
+    private Runnable redrawPolyline = new Runnable() {
+        @Override
+        public void run() {
+            List<UserLocation> userLocations = new ArrayList<>();
+            for (Pair<String, UserLocation> location : locations) {
+                userLocations.add(location.second);
+            }
+
+            drawPolyline(route, Color.BLACK, userLocations);
+        }
+    };
+
+    private void clearPolyline(List<Polyline> polyline) {
+        for (Polyline line : polyline) {
+            line.remove();
+        }
+        polyline.clear();
+    }
+
+    private static final int MAX_GAP = 500;
+
+    private void drawPolyline(List<Polyline> polyline, int color, List<UserLocation> locations) {
+        clearPolyline(polyline);
+
+        UserLocation previousLocation = null;
+        PolylineOptions options = null;
+        for (UserLocation location : locations) {
+            if (previousLocation == null  || Geo.distance(location.getLatitude(), location.getLongitude(), previousLocation.getLatitude(), previousLocation.getLongitude()) > MAX_GAP) {
+                if (options != null) {
+                    Polyline line = googleMap.addPolyline(options);
+                    polyline.add(line);
+                }
+
+                options = new PolylineOptions();
+                options.color(color);
+            }
+            options.add(new LatLng(location.getLatitude(), location.getLongitude()));
+            previousLocation = location;
+        }
+
+        if (options != null) {
+            Polyline line = googleMap.addPolyline(options);
+            polyline.add(line);
         }
     }
 
@@ -255,32 +308,23 @@ implements NavigationView.OnNavigationItemSelectedListener {
         private ChildEventListener friendLocationListener;
 
         private int color;
-        private Polyline friendRoute;
+        private List<Polyline> friendRoute = new ArrayList<>();
 
         private List<UserLocation> friendLocations = new ArrayList<UserLocation>();
 
         public TrackedUserFriend(UserFriend friend, int color) {
             this.friend = friend;
             friendReference = mDatabase.child("users").child(friend.getUdid());
-            friendLocationReference = userReference.child("locations");
+            friendLocationReference = friendReference.child("locations");
             this.color = color;
         }
 
         public void startTracking() {
-            userLocationListener = new ChildEventListener() {
+            friendLocationListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     friendLocations.add(dataSnapshot.getValue(UserLocation.class));
-
-                    if (friendRoute != null) {
-                        friendRoute.remove();
-                    }
-                    PolylineOptions options = new PolylineOptions();
-                    for (UserLocation location : friendLocations) {
-                        options.add(new LatLng(location.getLatitude(), location.getLongitude()));
-                    }
-                    options.color(color);
-                    friendRoute = googleMap.addPolyline(options);
+                    scheduleFriendPolylineRedraw();
                 }
 
                 @Override
@@ -302,12 +346,24 @@ implements NavigationView.OnNavigationItemSelectedListener {
 
                 }
             };
-            userLocationReference.addChildEventListener(userLocationListener);
+            friendLocationReference.addChildEventListener(friendLocationListener);
         }
 
         private void stopTracking() {
-            userLocationReference.removeEventListener(userLocationListener);
+            friendLocationReference.removeEventListener(friendLocationListener);
         }
+
+        private void scheduleFriendPolylineRedraw() {
+            mainThreadHandler.removeCallbacks(redrawFriendPolyline);
+            mainThreadHandler.postDelayed(redrawFriendPolyline, 100);
+        }
+
+        private Runnable redrawFriendPolyline = new Runnable() {
+            @Override
+            public void run() {
+                drawPolyline(friendRoute, color, friendLocations);
+            }
+        };
 
     }
 
